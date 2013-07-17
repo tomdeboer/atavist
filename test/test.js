@@ -5,8 +5,8 @@ var t = require('tap'),
 var atavist = require('../'),
     root = __dirname + '/data',
     config = {
-      base: root + '/content',
-      views: root + '/views',
+      content: root + '/content',
+      template: root + '/template',
       public: root + '/public',
       port: 0
     };

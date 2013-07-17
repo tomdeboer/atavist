@@ -17,11 +17,11 @@ exports.defaults = {
   port: 8000,
   // NB: all paths should be absolute
   // Content directory
-  base: 'content',
+  content: 'content',
   // View directory
-  views: 'views',
+  template: 'template',
   // Public files directory
-  public: 'public',
+  public: null,
   // View engine
   engine: cons.hogan,
   // View file extension
@@ -43,10 +43,10 @@ exports.setup = function (config, done) {
 
   config = _.defaults(config, exports.defaults);
 
-  app.set('port', config.port || 8000);
+  app.set('port', config.port);
 
   // Views
-  app.set('views', config.views);
+  app.set('views', config.template);
   app.set('view engine', config.extension);
   app.engine('html', config.engine);
 
@@ -60,14 +60,14 @@ exports.setup = function (config, done) {
   // Use express routing
   app.use(app.router);
   // Serve static files
-  app.use(express.static(config.public));
+  if (config.public) app.use(express.static(config.public));
 
   /**
    * Content setup & routing
    */
 
   // Search the content directory for all articles
-  mdtree.build(config.base, function (err, tree) {
+  mdtree.build(config.content, function (err, tree) {
 
     if (err) return done(err);
 
@@ -76,7 +76,7 @@ exports.setup = function (config, done) {
 
     // Iterate through them, creating a URL and setting up a route
     files.forEach(function (file) {
-      file.url = ('/' + file.urlPath.replace(config.base, '')).replace(/\/\//, '/');
+      file.url = ('/' + file.urlPath.replace(config.content, '')).replace(/\/\//, '/');
       file.files = files;
       app.get(file.url, function (req, res) {
         res.render(file.layout || 'index', file);
@@ -87,7 +87,8 @@ exports.setup = function (config, done) {
       app: app,
       server: server,
       tree: tree,
-      files: files
+      files: files,
+      config: config
     });
 
   });
